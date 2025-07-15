@@ -13,17 +13,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Debug SSH key (временно!)
-        run: |
-          ls -la ~/.ssh
-          head -n 5 ~/.ssh/id_rsa || echo "No key found"
-
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
           printf "%s" "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Debug SSH key (optional, безопасный)
+        run: |
+          if [ -d ~/.ssh ]; then
+            ls -la ~/.ssh
+            head -n 5 ~/.ssh/id_rsa || echo "No key content"
+          else
+            echo "~/.ssh не существует"
+          fi
 
       - name: Deploy via SSH
         run: |
