@@ -2,29 +2,42 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [main] # или master
+    branches:
+      - main  # или твоя основная ветка
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up SSH key
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-    - name: Deploy to EC2 and run Docker container
-      run: |
-        ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-          cd ~/gateway || git clone https://github.com/<your-user>/gateway.git && cd gateway
-          git pull
-          docker stop gateway || true && docker rm gateway || true
-          docker build -t gateway .
-          docker run -d --name gateway -p 8080:8080 gateway
-        EOF
+      - name: Deploy via SSH
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+
+            # Стоп и удаление старого контейнера (если есть)
+            docker stop gateway || true
+            docker rm gateway || true
+
+            # Удаление старого образа
+            docker rmi gateway:latest || true
+
+            # Клонирование проекта заново
+            rm -rf gateway || true
+            git clone https://github.com/artem-nikeienko/my-bank-gateway.git
+            cd gateway
+
+            # Сборка и запуск
+            docker build -t gateway .
+            docker run -d --name gateway -p 3000:3000 gateway
+          EOF
