@@ -1,0 +1,14 @@
+services:
+  gateway:
+    build: .
+    container_name: gateway
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+    network:
+      - my-bank
+
+networks:
+  my-bank:
+    driver: bridge
