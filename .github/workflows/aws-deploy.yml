@@ -16,9 +16,9 @@ jobs:
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
-          cat <<EOF > ~/.ssh/id_rsa
+          bash -c "cat > ~/.ssh/id_rsa <<'EOKEY'
 ${{ secrets.EC2_SSH_KEY }}
-EOF
+EOKEY"
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
