@@ -6,7 +6,7 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: development
-    network:
+    networks:
       - my-bank
 
 networks:
