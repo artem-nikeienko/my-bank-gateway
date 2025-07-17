@@ -32,7 +32,7 @@ jobs:
           port: 22
           script: |
             cd /home/ubuntu/app/gateway
-            docker stop mybank_gateway || true
-            docker rm mybank_gateway || true
-            docker build -t mybank_gateway .
-            docker run -d --name mybank_gateway -p 80:8080 mybank_gateway
+            docker compose down || true
+            docker compose pull || true
+            docker compose build
+            docker compose up -d
